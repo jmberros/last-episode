@@ -5,7 +5,7 @@ require 'nokogiri'
 require 'date'
 
 class Kickass
-  def get_last_weeks_shows(show_name, options = { only_720: false })
+  def get_last_week_shows(show_name, options = { only_720: false })
     date_range.each do |date|
       search_term = "#{show_name} #{date.strftime('%Y %m %d')}".downcase
       debug("\n#{date.strftime('%A %D')} ~ Search for: '#{search_term}'")
@@ -25,7 +25,7 @@ class Kickass
   end
 
   def date_range
-    (Date.today - 14 .. Date.today).to_a.reverse
+    (Date.today - 6 .. Date.today).to_a.reverse
   end
 
   private
@@ -60,6 +60,6 @@ end
 
 if __FILE__ == $PROGRAM_NAME
   kickass = Kickass.new
-  kickass.get_last_weeks_shows('nightly show')
-  kickass.get_last_weeks_shows('daily show', only_720: true)
+  kickass.get_last_week_shows('nightly show')
+  kickass.get_last_week_shows('daily show', only_720: true)
 end
