@@ -16,11 +16,12 @@ class Kickass
       debug("\t#{rows.count} torrent matches")
       next if rows.count.zero?
 
-      # Download the first (most popular) torrent
-      add_torrent torrent_url_from_row(rows.first) unless options[:only_720]
-
       # Download the first torrent listed with 720p
-      add_torrent torrent_url_from_row(rows.find { |tr| tr.text =~ /720/ })
+      hd_torrent = rows.find { |tr| tr.text =~ /720/ }
+      add_torrent torrent_url_from_row(hd_torrent)
+
+      # Download the first (most popular) torrent if there's no HD available
+      add_torrent torrent_url_from_row(rows.first) if !hd_torrent
     end
   end
 
