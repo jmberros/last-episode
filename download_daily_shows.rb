@@ -5,23 +5,39 @@ require 'nokogiri'
 require 'date'
 
 class Kickass
+  def search_and_download(search_term)
+    debug("\nSearch for: '#{search_term}'")
+    page = nokogirize search_url(search_term)
+    rows = page.css('table[class="data"] tr')
+                .select { |tr| tr.text =~ /#{search_term}/i }
+    debug("\t#{rows.count} torrent matches")
+
+    if rows.count.zero?
+      @zero_results_count && @zero_results_count += 1 # Hack, sorry
+      return
+    end
+
+    # Download the first torrent listed with 720p
+    hd_torrent = rows.find { |tr| tr.text =~ /720/ }
+    add_torrent torrent_url_from_row(hd_torrent)
+
+    # Download the first (most popular) torrent if there's no HD available
+    add_torrent torrent_url_from_row(rows.first) if !hd_torrent
+  end
+
   def get_last_week_shows(show_name, options = { only_720: false })
     date_range.each do |date|
-      search_term = "#{show_name} #{date.strftime('%Y %m %d')}".downcase
-      debug("\n#{date.strftime('%A %D')} ~ Search for: '#{search_term}'")
+      search_and_download "#{show_name} #{date.strftime('%Y %m %d')}".downcase
+    end
+  end
 
-      page = nokogirize search_url(search_term)
-      rows = page.css('table[class="data"] tr')
-                 .select { |tr| tr.text =~ /#{search_term}/i }
-      debug("\t#{rows.count} torrent matches")
-      next if rows.count.zero?
+  def hack_to_get_this_season(show_name, season)
+    @zero_results_count = 0
 
-      # Download the first torrent listed with 720p
-      hd_torrent = rows.find { |tr| tr.text =~ /720/ }
-      add_torrent torrent_url_from_row(hd_torrent)
-
-      # Download the first (most popular) torrent if there's no HD available
-      add_torrent torrent_url_from_row(rows.first) if !hd_torrent
+    (1..25).each do |n|
+      break if @zero_results_count > 3
+      episode = sprintf "%02d", n
+      search_and_download "#{show_name} s#{season}e#{episode}"
     end
   end
 
@@ -38,7 +54,7 @@ class Kickass
   end
 
   def search_url(term)
-    "https://kickass.so/usearch/#{URI.escape(term)}/"
+    "https://kickass.to/usearch/#{URI.escape(term)}/"
   end
 
   def torrent_url_from_row(row)
@@ -61,6 +77,8 @@ end
 
 if __FILE__ == $PROGRAM_NAME
   kickass = Kickass.new
-  kickass.get_last_week_shows('nightly show')
-  kickass.get_last_week_shows('daily show', only_720: true)
+  kickass.get_last_week_shows("daily show", only_720: true)
+  #kickass.get_last_week_shows('nightly show', only_720: true)
+  kickass.hack_to_get_this_season("last week tonight with john oliver", "02")
+  kickass.hack_to_get_this_season("portlandia", "05")
 end
