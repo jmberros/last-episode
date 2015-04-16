@@ -22,7 +22,7 @@ class Kickass
     add_torrent torrent_url_from_row(hd_torrent)
 
     # Download the first (most popular) torrent if there's no HD available
-    add_torrent torrent_url_from_row(rows.first) if !hd_torrent
+    #add_torrent torrent_url_from_row(rows.first) if !hd_torrent
   end
 
   def get_last_week_shows(show_name, options = { only_720: false })
@@ -31,10 +31,10 @@ class Kickass
     end
   end
 
-  def hack_to_get_this_season(show_name, season)
+  def hack_to_get_this_season(show_name, season, episode_from=1)
     @zero_results_count = 0
 
-    (1..25).each do |n|
+    ( episode_from.to_i .. 25 ).each do |n|
       break if @zero_results_count > 3
       episode = sprintf "%02d", n
       search_and_download "#{show_name} s#{season}e#{episode}"
@@ -77,8 +77,9 @@ end
 
 if __FILE__ == $PROGRAM_NAME
   kickass = Kickass.new
-  kickass.get_last_week_shows("daily show", only_720: true)
+  kickass.get_last_week_shows("daily show")
   #kickass.get_last_week_shows('nightly show', only_720: true)
-  kickass.hack_to_get_this_season("last week tonight with john oliver", "02")
-  kickass.hack_to_get_this_season("portlandia", "05")
+  kickass.hack_to_get_this_season("last week tonight with john oliver", "02", "09")
+  kickass.hack_to_get_this_season("portlandia", "05", "10")
+  kickass.hack_to_get_this_season("game of thrones", "05")
 end
