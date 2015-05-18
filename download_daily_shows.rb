@@ -18,7 +18,7 @@ class Kickass
     end
 
     # Download the first torrent listed with 720p
-    hd_torrent = rows.find { |tr| tr.text =~ /720/ }
+    hd_torrent = rows.find { |tr| tr.text =~ /720p/ }
     add_torrent torrent_url_from_row(hd_torrent)
 
     # Download the first (most popular) torrent if there's no HD available
@@ -49,8 +49,15 @@ class Kickass
 
   def nokogirize(url)
     debug("Visit '#{url}'")
-    response = Net::HTTP.get_response(URI.parse(url))
-    Nokogiri::HTML(response.body)
+    begin
+      response = Net::HTTP.get_response(URI.parse(url))
+      if response.code == '301'
+        response = Net::HTTP.get_response(URI.parse(response.header['location']))
+      end
+      Nokogiri::HTML(response.body)
+    rescue SocketError, Errno::ETIMEDOUT
+      exit # Exit silently if there's laggy or no internet
+    end
   end
 
   def search_url(term)
