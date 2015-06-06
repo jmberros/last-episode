@@ -7,30 +7,33 @@ require 'date'
 
 
 class Kickass
-  def initialize
-    @max = 3  # Download up to the three last episodes
+  def initialize(options={})
+    @last = options[:last] || 1  # Download up to <last> last episodes
+    @max = options[:max] || 25  # Max episode number to search down from there
   end
 
-  def get_by_date(show_name)
+  def get_by_date(show_name, options={})
     """Get last couple of episodes searching by date, from today"""
 
+    @max = options[:max] if options[:max]
     @found_count = 0  # stops when it finds the last couple of episodes,
                       # doesn't keep searching down to the first one
 
     date_range.each do |date|
-      break if @found_count >= @max
+      break if @found_count >= @last
       search_and_download "#{show_name} #{date.strftime('%Y %m %d')}".downcase
     end
   end
 
-  def get_by_season(show_name, season)
+  def get_by_season(show_name, season, options={})
     """Get last couple of episodes for a given season"""
 
+    @max = options[:max] if options[:max]
     @found_count = 0  # stops when it finds the last couple of episodes,
                       # doesn't keep searching down to the first one
 
-    ( 1 .. 15 ).to_a.reverse.each do |n|  # 25 is just a plausible max
-      break if @found_count >= @max
+    ( 1 .. @max ).to_a.reverse.each do |n|
+      break if @found_count >= @last
       episode = sprintf "%02d", n
       search_and_download "#{show_name} s#{season}e#{episode}"
     end
@@ -47,7 +50,7 @@ class Kickass
     page = nokogirize search_url(search_term)
     rows = page.css('table[class="data"] tr')
                 .select { |tr| tr.text =~ /#{search_term}/i }
-    debug("\t#{rows.count} torrent matches")
+    debug("-> #{rows.count} torrent matches")
     return if rows.count.zero?
 
 
@@ -55,7 +58,6 @@ class Kickass
     hd_torrent = rows.find { |tr| tr.text =~ /720p/ }
     add_torrent torrent_url_from_row(hd_torrent)
     @found_count += 1 if hd_torrent
-    debug("Found #{@found_count} so far")
 
     # Download the first (most popular) torrent if there's no HD available
     #add_torrent torrent_url_from_row(rows.first) if !hd_torrent
@@ -85,9 +87,9 @@ class Kickass
 
   def add_torrent(url)
     return if url.nil? || url.empty?
-    debug("\tAdd torrent from: '#{url}'")
+    debug("Add torrent from: '#{url}'")
     result = `transmission-remote -a #{url}`
-    debug("\t-> " + result)
+    debug("-> " + result)
   end
 
   def debug(message)
@@ -99,7 +101,7 @@ end
 if __FILE__ == $PROGRAM_NAME
   kickass = Kickass.new
   kickass.get_by_date("daily show")
-  kickass.get_by_season("last week tonight with john oliver", "02")
-  kickass.get_by_season("game of thrones", "05")
-  kickass.get_by_season("louie", "05")
+  kickass.get_by_season("last week tonight with john oliver", "02", max: 25)
+  kickass.get_by_season("game of thrones", "05", max: 10)
+  kickass.get_by_season("louie", "05", max: 13)
 end
