@@ -56,11 +56,11 @@ class Kickass
 
     # Download the first torrent listed with 720p
     hd_torrent = rows.find { |tr| tr.text =~ /720p/ }
-    add_torrent torrent_url_from_row(hd_torrent)
-    @found_count += 1 if hd_torrent
+    result = add_torrent torrent_url_from_row(hd_torrent)
 
-    # Download the first (most popular) torrent if there's no HD available
-    #add_torrent torrent_url_from_row(rows.first) if !hd_torrent
+    add_torrent(torrent_url_from_row(rows.first)) if result =~ /Error/
+
+    @found_count += 1 if hd_torrent
   end
 
   def nokogirize(url)
@@ -77,11 +77,11 @@ class Kickass
   end
 
   def search_url(term)
-    "https://kickass.to/usearch/#{URI.escape(term)}/"
+    "https://kat.cr/usearch/#{URI.escape(term)}/"
   end
 
   def torrent_url_from_row(row)
-    a = row && row.at_css('a[title="Download torrent file"]')
+    a = row && row.at_css('a[title="Torrent magnet link"]')
     a && a['href']
   end
 
@@ -90,6 +90,7 @@ class Kickass
     debug("Add torrent from: '#{url}'")
     result = `transmission-remote -a #{url}`
     debug("-> " + result)
+    result
   end
 
   def debug(message)
@@ -99,9 +100,18 @@ end
 
 
 if __FILE__ == $PROGRAM_NAME
-  kickass = Kickass.new
-  kickass.get_by_date("daily show")
-  kickass.get_by_season("last week tonight with john oliver", "02", max: 25)
-  kickass.get_by_season("game of thrones", "05", max: 10)
-  kickass.get_by_season("louie", "05", max: 13)
+  kickass = Kickass.new(last: 1)
+  kickass.get_by_date("late show with stephen colbert")
+  # kickass.get_by_season("last week tonight with john oliver", "02", max: 45)
+  # kickass.get_by_season("louie", "05", max: 13)
+
+
+  # old
+  # kickass.get_by_date("daily show")
+  # kickass.get_by_season("game of thrones", "05", max: 10)
+  # kickass = Kickass.new(last: 35)
+  # kickass.get_by_season("adventure time", "05", max: 20)
+  # kickass.get_by_season("key and peele", "05", max: 13)
+  # kickass = Kickass.new(last: 11)
+  # kickass.get_by_season("key and peele", "04", max: 13)
 end
