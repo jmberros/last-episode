@@ -101,8 +101,8 @@ end
 
 if __FILE__ == $PROGRAM_NAME
   kickass = Kickass.new(last: 1)
-  kickass.get_by_date("late show with stephen colbert")
-  # kickass.get_by_season("last week tonight with john oliver", "02", max: 45)
+  # kickass.get_by_date("late show with stephen colbert")
+  kickass.get_by_season("last week tonight with john oliver", "02", max: 45)
   # kickass.get_by_season("louie", "05", max: 13)
 
 

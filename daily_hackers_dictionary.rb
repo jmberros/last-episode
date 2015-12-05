@@ -6,7 +6,7 @@ require 'net/http'
 require 'nokogiri'
 require 'date'
 require 'pony'
-require 'pry-debugger'
+# require 'pry-debugger'
 
 def debug(message)
   puts(message)
@@ -45,8 +45,10 @@ def get_todays_term
       address: 'smtp.gmail.com',
       port: '587',
       enable_starttls_auto: true,
-      user_name: smtp_credentials["user"],
-      password: smtp_credentials["pass"],
+      user_name: 'juanmaberros',
+      password: "ngoinbcasuctiudk".reverse,
+      # user_name: smtp_credentials["user"],
+      # password: smtp_credentials["pass"],
       authentication: :plain,
       domain: "localhost.localdomain"
     }
@@ -58,9 +60,9 @@ def todays_lucky_number(total)
   (today % total) - ARGV.first.to_i # A number in [0 .. total) for today
 end
 
-def smtp_credentials
-  YAML::load_file File.expand_path("~/.smtp_credentials")
-end
+# def smtp_credentials
+  # YAML::load_file File.expand_path("~/.smtp_credentials")
+# end
 
 
 get_todays_term if __FILE__ == $PROGRAM_NAME
