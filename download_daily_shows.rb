@@ -4,6 +4,7 @@ require 'uri'
 require 'net/http'
 require 'nokogiri'
 require 'date'
+require 'yaml'
 
 
 class Kickass
@@ -43,6 +44,10 @@ class Kickass
 
   def date_range
     (Date.today - 6 .. Date.today).to_a.reverse
+  end
+
+  def creds
+    YAML::load_file File.expand_path("~/.transmission_remote_credentials")
   end
 
   def search_and_download(search_term)
@@ -88,7 +93,7 @@ class Kickass
   def add_torrent(url)
     return if url.nil? || url.empty?
     debug("Add torrent from: '#{url}'")
-    result = `transmission-remote -a #{url}`
+    result = `transmission-remote -n #{creds["user"]}:#{creds["pass"]} -a '#{url}'`
     debug("-> " + result)
     result
   end
