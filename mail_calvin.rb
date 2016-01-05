@@ -1,29 +1,34 @@
 #!/usr/bin/env ruby
-require 'open-uri'
-require 'nokogiri'
-require 'pony'
-require 'colorize'
+
+require "open-uri"
+require "nokogiri"
+require "fileutils"
+require "pony"
+
 
 def smtp_credentials
   YAML::load_file File.expand_path("~/.smtp_credentials")
 end
 
-url = "http://www.gocomics.com/calvinandhobbes"
-doc = Nokogiri::HTML(open(url))
-img_url = doc.css("img[alt='Calvin and Hobbes']").first['src']
+thirty_years_ago = Date.today - 11004
+url = "http://www.gocomics.com/calvinandhobbes/" + 
+      "#{thirty_years_ago.strftime("%Y/%m/%d")}"
+doc = Nokogiri::HTML open(url)
+img_url = doc.css(".feature img").last["src"]
 
-target_dir = "#{Dir.home}/Dropbox/calvin_strips"
-filename = Date.today.strftime('%F_%A').downcase
-fullpath = "#{target_dir}/#{filename}.gif"
+target_dir = File.join(Dir.home, "Dropbox", "calvin_strips",
+                       thirty_years_ago.year.to_s)
+FileUtils.mkdir_p(target_dir)
+filename = thirty_years_ago.strftime("%F_%A.gif").downcase
+fullpath = File.join(target_dir, filename)
 
-FileUtils.mkdir(target_dir) unless File.directory? target_dir
 `wget -O #{fullpath} #{img_url}`
 
 Pony.mail(
-  subject: "Calvin Strip ~ #{Date.today.strftime('%A %F')} ",
+  subject: "Calvin & Hobbes · #{thirty_years_ago.strftime("%d %b, %Y · %A")}",
   from: "'JuanBOT' <juanbot@beleriand>",
   to: ["'The Juanma' <juanmaberros@gmail.com>", "'Peluca' <arami035@gmail.com>"],
-  html_body: "<img src='#{img_url}' style='width: 80%;'>",
+  html_body: "<img src='#{img_url}' style='width: 100%;'>",
   via: :smtp,
   via_options: {
     address: 'smtp.gmail.com',
