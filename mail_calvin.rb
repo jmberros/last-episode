@@ -27,7 +27,7 @@ end
 first_strip_date = Date.parse("1985/11/18")
 when_to_send_first_strip = Date.parse("2016/01/04")
 today_strip_date = Date.today - (when_to_send_first_strip - first_strip_date)
-strip_number = (today_strip_date - first_strip_date).to_i
+strip_number = (today_strip_date - first_strip_date).to_i + 1
 strip_number = number_with_delimiter(strip_number)
 
 url = "http://www.gocomics.com/calvinandhobbes/" +
