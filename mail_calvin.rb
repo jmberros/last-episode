@@ -4,31 +4,42 @@ require "open-uri"
 require "nokogiri"
 require "fileutils"
 require "pony"
+require "erb"
+require "action_view"
+
+include ActionView::Helpers::NumberHelper
 
 
 def smtp_credentials
   YAML::load_file File.expand_path("~/.smtp_credentials")
 end
 
-thirty_years_ago = Date.today - 11004
+first_strip_date = Date.parse("1985/11/18")
+when_to_send_first_strip = Date.parse("2016/01/04")
+today_strip_date = Date.today - (when_to_send_first_strip - first_strip_date)
+strip_number = (today_strip_date - first_strip_date).to_i
+strip_number = number_with_delimiter(strip_number)
+
 url = "http://www.gocomics.com/calvinandhobbes/" + 
-      "#{thirty_years_ago.strftime("%Y/%m/%d")}"
+      "#{today_strip_date.strftime("%Y/%m/%d")}"
 doc = Nokogiri::HTML open(url)
 img_url = doc.css(".feature img").last["src"]
 
 target_dir = File.join(Dir.home, "Dropbox", "calvin_strips",
-                       thirty_years_ago.year.to_s)
+                       today_strip_date.year.to_s)
 FileUtils.mkdir_p(target_dir)
-filename = thirty_years_ago.strftime("%F_%A.gif").downcase
+filename = today_strip_date.strftime("%F_%A_N#{strip_number}.gif").downcase
 fullpath = File.join(target_dir, filename)
 
 `wget -O #{fullpath} #{img_url}`
 
+mail_template = File.read("./mail_calvin.erb")
+
 Pony.mail(
-  subject: "Calvin & Hobbes · #{thirty_years_ago.strftime("%d %b, %Y · %A")}",
-  from: "'JuanBOT' <juanbot@beleriand>",
+  subject: "Calvin & Hobbes · #{today_strip_date.strftime("%d %b, %Y · %A")}",
+  from: "'Juanbot' <juanbot@beleriand>",
   to: ["'The Juanma' <juanmaberros@gmail.com>", "'Peluca' <arami035@gmail.com>"],
-  html_body: "<img src='#{img_url}' style='width: 100%;'>",
+  html_body: ERB.new(mail_template).result(),
   via: :smtp,
   via_options: {
     address: 'smtp.gmail.com',
