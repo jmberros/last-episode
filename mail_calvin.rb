@@ -14,13 +14,23 @@ def smtp_credentials
   YAML::load_file File.expand_path("~/.smtp_credentials")
 end
 
+def addressees
+  lucky_ones = {
+    Juangui: "juanmaberros@gmail.com",
+    Amychica: "arami035@gmail.com",
+    Jesolandia: "jesica.berros@gmail.com",
+  }
+
+  lucky_ones.map{ |name, address| "'#{name}' <#{address}>" }
+end
+
 first_strip_date = Date.parse("1985/11/18")
 when_to_send_first_strip = Date.parse("2016/01/04")
 today_strip_date = Date.today - (when_to_send_first_strip - first_strip_date)
 strip_number = (today_strip_date - first_strip_date).to_i
 strip_number = number_with_delimiter(strip_number)
 
-url = "http://www.gocomics.com/calvinandhobbes/" + 
+url = "http://www.gocomics.com/calvinandhobbes/" +
       "#{today_strip_date.strftime("%Y/%m/%d")}"
 doc = Nokogiri::HTML open(url)
 img_url = doc.css(".feature img").last["src"]
@@ -38,7 +48,8 @@ mail_template = File.read("./mail_calvin.erb")
 Pony.mail(
   subject: "Calvin & Hobbes · #{today_strip_date.strftime("%d %b, %Y · %A")}",
   from: "'Juanbot' <juanbot@beleriand>",
-  to: ["'The Juanma' <juanmaberros@gmail.com>", "'Peluca' <arami035@gmail.com>"],
+  to: addressees.shift,
+  bcc: addressees,
   html_body: ERB.new(mail_template).result(),
   via: :smtp,
   via_options: {
