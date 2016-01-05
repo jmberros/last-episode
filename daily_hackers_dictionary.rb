@@ -36,7 +36,7 @@ def get_todays_term
   Pony.mail(
     subject: "Hacker's dictionary: \"#{term}\"",
     from: "'JuanBOT' <juanbot@beleriand>",
-    to: ["'The Juanma' <juanmaberros@gmail.com>", "'Peluca' <arami035@gmail.com>"],
+    to: ["'The Juanma' <juanmaberros@gmail.com>"],
     html_body: \
       "<b>#{term}</b>: #{pronunciation}<br><br>"\
       "#{definition}",
