@@ -1,9 +1,11 @@
 <img src='<%= img_url %>' style='width: 100%;'>
+
 <p style='font-size: 11px; text-align: right; margin-top: 2px; font-weight: bold;'>
-  strip <%= strip_number %>
-  <br>
-  <a href='<%= url %>' style='font-decoration: initial; font-size: 11px; color: forestgreen;'>
-    @gocomics
-  </a>
+    <% today_strip_date.strftime "%d %b, %Y" %>
+    strip <%= strip_number %>
+    <br>
+    <a href='<%= url %>' style='font-decoration: initial; font-size: 11px; color: forestgreen;'>
+      @gocomics
+    </a>
 </p>
 
