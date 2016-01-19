@@ -46,7 +46,7 @@ end
 
 def strip_number
   strip_number = (today_strip_date - first_strip_date).to_i + 1
-  strip_number = number_with_delimiter strip_number
+  number_with_delimiter strip_number
 end
 
 def url
@@ -56,7 +56,7 @@ end
 
 def img_url
   doc = Nokogiri::HTML open url
-  img_url = doc.css(".feature img").last["src"]
+  doc.css(".feature img").last["src"]
 end
 
 def download
@@ -66,7 +66,7 @@ def download
   filename = today_strip_date.strftime("%F_%A_N#{strip_number}.gif").downcase
   fullpath = File.join target_dir, filename
 
-  `wget -O #{fullpath} #{img_url}`
+  `wget -qO #{fullpath} #{img_url}`
 end
 
 def mail_it
