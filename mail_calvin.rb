@@ -7,6 +7,7 @@ require "fileutils"
 require "pony"
 require "erb"
 require "action_view"
+require "active_support/all"
 
 include ActionView::Helpers::NumberHelper
 
@@ -21,6 +22,10 @@ def addressees
     Amychica: "arami035@gmail.com",
     Jesolandia: "jesica.berros@gmail.com",
   }
+
+  if ENV["DEBUG"]
+    return lucky_ones[0..0]
+  end
 
   lucky_ones.map{ |name, address| "'#{name}' <#{address}>" }
 end
@@ -40,8 +45,12 @@ def first_strip_date
 end
 
 def today_strip_date
-  when_to_send_first_strip = Date.parse "2016/01/04"
-  Date.today - (when_to_send_first_strip - first_strip_date)
+  # when_to_send_first_strip = Date.parse "2016/01/04"
+  # Date.today - (when_to_send_first_strip - first_strip_date)
+
+  # Best so the current date is syncronized with the comic date,
+  # though you'll lose the 29th feb comics since 30 % 4 != 0
+  30.years.ago.to_date
 end
 
 def strip_number
@@ -59,12 +68,19 @@ def img_url
   doc.css(".feature img").last["src"]
 end
 
+def debug(msg)
+  puts msg if ENV['DEBUG']
+end
+
 def download
   target_dir = File.join Dir.home, "Dropbox", "calvin_strips",
                          today_strip_date.year.to_s
   FileUtils.mkdir_p target_dir
   filename = today_strip_date.strftime("%F_%A_N#{strip_number}.gif").downcase
   fullpath = File.join target_dir, filename
+
+  debug("download URL: '#{img_url}'")
+  debug("target path: '#{fullpath}'")
 
   `wget -qO #{fullpath} #{img_url}`
 end
@@ -73,11 +89,12 @@ def mail_it
   template_path = File.join File.dirname(__FILE__), "mail_calvin.erb"
   mail_template = File.read template_path
 
+  debug("address: #{addressees}")
   Pony.mail(
     subject: "Calvin & Hobbes · #{today_strip_date.strftime "%d %b, %Y · %A" }",
-    from: "'Juanbot' <juanbot@beleriand>",
-    to: addressees.shift,
-    bcc: addressees,
+    from: "'Juanbot' <juanbot@#{`hostname`.chomp}>",
+    to: addressees.first,
+    bcc: ENV["DEBUG"] ? nil : addressees,
     html_body: ERB.new(mail_template).result,
     via: :smtp,
     via_options: {
