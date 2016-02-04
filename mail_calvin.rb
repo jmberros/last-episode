@@ -13,7 +13,9 @@ include ActionView::Helpers::NumberHelper
 
 
 def smtp_credentials
-  YAML::load_file File.expand_path "~/.smtp_credentials"
+  filepath = File.expand_path "~/.smtp_credentials"
+  raise "Credentials file '#{filepath}' doesn't exist" unless File.exists? filepath
+  YAML::load_file File.expand_path filepath
 end
 
 def addressees
@@ -24,7 +26,7 @@ def addressees
   }
 
   if ENV["DEBUG"]
-    return lucky_ones[0..0]
+    lucky_ones = lucky_ones[0..0]
   end
 
   lucky_ones.map{ |name, address| "'#{name}' <#{address}>" }
