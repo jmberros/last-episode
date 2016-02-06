@@ -26,7 +26,7 @@ def addressees
   }
 
   if ENV["DEBUG"]
-    lucky_ones = lucky_ones[0..0]
+    lucky_ones = Hash[*lucky_ones.first]
   end
 
   lucky_ones.map{ |name, address| "'#{name}' <#{address}>" }
