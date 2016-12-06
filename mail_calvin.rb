@@ -93,7 +93,7 @@ def mail_it
 
   debug("address: #{addressees}")
   Pony.mail(
-    subject: "Calvin & Hobbes · #{today_strip_date.strftime "%d %b, %Y · %A" }",
+    subject: "Calvin & Hobbes · #{today_strip_date.strftime "%d %b, %Y" }",
     from: "'Juanbot' <juanbot@#{`hostname`.chomp}>",
     to: addressees.first,
     bcc: ENV["DEBUG"] ? nil : addressees,
