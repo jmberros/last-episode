@@ -34,14 +34,14 @@ class ComicDownloader
   end
 
   def today_comic_url
-    date_stub = today_strip_date.strftime "%Y/%m/%d" 
+    date_stub = today_strip_date.strftime "%Y/%m/%d"
     "http://www.gocomics.com/calvinandhobbes/#{date_stub}"
   end
 
   def today_img_url
     @img_url ||= begin
       doc = Nokogiri::HTML open today_comic_url
-      doc.css(".feature img").last["src"]
+      doc.css('.item-comic-image img').last["src"]
     end
   end
 
@@ -58,7 +58,7 @@ class ComicMailer
     @sent_logfile = File.expand_path "~/.calvin_cron_last_date_sent"
 
     @comic_downloader = ComicDownloader.new
-  end 
+  end
 
   def smtp_credentials
     YAML::load_file @smtp_creds_file
