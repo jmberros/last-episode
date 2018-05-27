@@ -35,7 +35,7 @@ class ComicDownloader
 
   def today_comic_url
     date_stub = today_strip_date.strftime "%Y/%m/%d"
-    "http://www.gocomics.com/calvinandhobbes/#{date_stub}"
+    "https://www.gocomics.com/calvinandhobbes/#{date_stub}"
   end
 
   def today_img_url
