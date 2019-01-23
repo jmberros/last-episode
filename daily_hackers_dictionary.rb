@@ -22,7 +22,23 @@ def nokogirize(url)
   Nokogiri::HTML(response.body)
 end
 
+def log_file
+  "/tmp/last_hackers_dictionary_sent.date"
+end
+
+def already_sent_today?
+  File.exists?(log_file) && Date.today == Date.parse(File.read(log_file))
+end
+
+def log_that_strip_was_sent!
+  File.open(log_file, "w+") do |f|
+    f.write Date.today.to_s
+  end
+end
+
 def get_todays_term
+  return if already_sent_today?
+
   index_page = nokogirize(base_url + "go01.html")
   links = index_page.css("dl dd dl dt a")
   n = todays_lucky_number(links.count)
@@ -51,6 +67,8 @@ def get_todays_term
       domain: "localhost.localdomain"
     }
   )
+
+  log_that_strip_was_sent!
 end
 
 def todays_lucky_number(total)

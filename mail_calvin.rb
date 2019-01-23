@@ -13,24 +13,16 @@ include ActionView::Helpers::NumberHelper
 
 
 class ComicDownloader
-  def target_dir
-    File.expand_path "~/Dropbox/calvin_strips/#{today_strip_date.year}"
+  def today_strip_date
+    # First strip was in 1985/11/18
+    # This cycle was initiated in 2015/11/18
+    30.years.ago.to_date
   end
 
   def today_strip_number
     first_strip_date = Date.parse "1985/11/18"
     strip_number = (today_strip_date - first_strip_date).to_i + 1
     number_with_delimiter strip_number
-  end
-
-  def target_filename
-    today_strip_date.strftime("%F_%A_N#{today_strip_number}.gif").downcase
-  end
-
-  def today_strip_date
-    # First strip was in 1985/11/18
-    # This cycle was initiated in 2015/11/18
-    30.years.ago.to_date
   end
 
   def today_comic_url
@@ -43,6 +35,14 @@ class ComicDownloader
       doc = Nokogiri::HTML open today_comic_url
       doc.css('.item-comic-image img').last["src"]
     end
+  end
+
+  def target_filename
+    today_strip_date.strftime("%F_%A_N#{today_strip_number}.gif").downcase
+  end
+
+  def target_dir
+    File.expand_path "~/Dropbox/calvin_strips/#{today_strip_date.year}"
   end
 
   def download_today_strip
